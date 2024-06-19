@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rule Based Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        #chat-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        .message-container {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 10px;
+        }
+        .user-message {
+            background-color: #e6f2ff;
+            padding: 10px;
+            border-radius: 12px;
+            margin-left: 10px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .bot-message {
+            background-color: #ccffcc;
+            padding: 10px;
+            border-radius: 12px;
+            margin-right: 10px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .message-container.user .user-message {
+            background-color: #e6f2ff;
+            align-self: flex-end;
+            margin-left: auto;
+            margin-right: 10px;
+        }
+        .message-container.bot .bot-message {
+            background-color: #ccffcc;
+            align-self: flex-start;
+            margin-left: 10px;
+            margin-right: auto;
+        }
+        .input-container {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #user-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        #send-button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rule Based Chatbot</h1>
+    <div id="chat-container">
+        <!-- Chat log will be dynamically populated here -->
+    </div>
+    <div class="input-container">
+        <input type="text" id="user-input" placeholder="Type your message..." onkeydown="if(event.keyCode == 13) sendMessage();">
+        <button id="send-button" onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        function sendMessage() {
+            var userInput = document.getElementById('user-input').value.trim();
+            if (!userInput) return;
+
+            // Append user message to chat log
+            appendMessage('user', userInput);
+
+            // Send user input to Flask API endpoint
+            fetch('/get_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_input: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Append bot response to chat log
+                appendMessage('bot', data.bot_response);
+            });
+
+            // Clear input field
+            document.getElementById('user-input').value = '';
+        }
+
+        function appendMessage(sender, message) {
+            var chatLog = document.getElementById('chat-container');
+            var messageContainer = document.createElement('div');
+            messageContainer.classList.add('message-container', sender);
+
+            var messageElement = document.createElement('div');
+            messageElement.classList.add(sender + '-message');
+            messageElement.textContent = message;
+
+            messageContainer.appendChild(messageElement);
+            chatLog.appendChild(messageContainer);
+
+            // Scroll to bottom of chat log
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+    </script>
+</body>
+</html>
